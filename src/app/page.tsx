@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link"; // 👈 Adicione esta linha aqui!
 import { Header } from "@/components/common/Header";
 import { MOCK_PRODUCTS } from "@/utils/products.mock";
 import { useCart } from "@/context/CartContext";
