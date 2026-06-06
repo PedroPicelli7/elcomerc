@@ -8,10 +8,11 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: "par-lampada-led-c6-h4",
     description: "Iluminação automotiva de alta performance com cooler integrado para dissipação de calor.",
     price: 89.90,
-    image_url: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500&auto=format&fit=crop&q=60", // Placeholder de alta qualidade
-    category: "Iluminação",
-    weight: 350, // gramas
-    stock: 15
+    image_url: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=500&auto=format&fit=crop&q=60",
+    weight: 350,
+    stock: 15,
+    category_id: "cat-1",
+    categories: { id: "cat-1", name: "Iluminação", slug: "iluminacao" }
   },
   {
     id: "prod-2",
@@ -20,9 +21,10 @@ export const MOCK_PRODUCTS: Product[] = [
     description: "Kit profissional com 12 peças em aço Cromo Vanádio com acabamento fosco premium.",
     price: 149.90,
     image_url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=60",
-    category: "Ferramentas",
-    weight: 1800, // 1.8kg
-    stock: 8
+    weight: 1800,
+    stock: 8,
+    category_id: "cat-2",
+    categories: { id: "cat-2", name: "Ferramentas", slug: "ferramentas" }
   },
   {
     id: "prod-3",
@@ -31,9 +33,10 @@ export const MOCK_PRODUCTS: Product[] = [
     description: "Brilho profundo de alto reflexo e proteção contra raios UV com repelência a água.",
     price: 54.00,
     image_url: "https://images.unsplash.com/photo-1607860108855-64acf2078ed9?w=500&auto=format&fit=crop&q=60",
-    category: "Limpeza",
     weight: 250,
-    stock: 22
+    stock: 22,
+    category_id: "cat-3",
+    categories: { id: "cat-3", name: "Limpeza", slug: "limpeza" }
   },
   {
     id: "prod-4",
@@ -42,8 +45,9 @@ export const MOCK_PRODUCTS: Product[] = [
     description: "Alta potência de sucção, ideal para limpeza rápida de estofados e carpetes do veículo.",
     price: 119.00,
     image_url: "https://images.unsplash.com/photo-1599256621730-535171e28e50?w=500&auto=format&fit=crop&q=60",
-    category: "Limpeza",
     weight: 850,
-    stock: 5
+    stock: 5,
+    category_id: "cat-3",
+    categories: { id: "cat-3", name: "Limpeza", slug: "limpeza" }
   }
 ];
