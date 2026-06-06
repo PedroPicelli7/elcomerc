@@ -1,37 +1,66 @@
 // src/app/carrinho/page.tsx
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/common/Header";
 import { useCart } from "@/context/CartContext";
-import {
-  Trash2,
-  Plus,
-  Minus,
-  ArrowRight,
-  ShoppingBag,
-  Truck,
-  Package,
-} from "lucide-react";
+import { ShippingRule } from "@/services/api/products";
+import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck, Package, MapPin } from "lucide-react";
 
 export default function CartPage() {
-  const {
-    cart,
-    updateQuantity,
-    removeFromCart,
-    clearCart,
-    cartTotal,
-    cartTotalWeight,
+  const { 
+    cart, 
+    updateQuantity, 
+    removeFromCart, 
+    clearCart, 
+    cartTotal, 
+    cartTotalWeight 
   } = useCart();
 
-  // Conversão simples de gramas para Kg para exibição comercial amigável
+  // Estados para gerenciar as regras de frete vindas do banco
+  const [shippingRules, setShippingRules] = useState<ShippingRule[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string>("");
+  const [activeRule, setActiveRule] = useState<ShippingRule | null>(null);
+  const [loadingShipping, setLoadingShipping] = useState<boolean>(true);
+
+  // Carrega as regras de frete regionais da nossa API interna
+  useEffect(() => {
+    async function loadShipping() {
+      try {
+        setLoadingShipping(true);
+        const res = await fetch("/api/shipping");
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setShippingRules(data);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar cidades de frete:", err);
+      } finally {
+        setLoadingShipping(false);
+      }
+    }
+    loadShipping();
+  }, []);
+
+  // Monitora a troca de cidade para recalcular as taxas operacionais
+  useEffect(() => {
+    if (selectedCity) {
+      const rule = shippingRules.find(r => r.city_name === selectedCity);
+      setActiveRule(rule || null);
+    } else {
+      setActiveRule(null);
+    }
+  }, [selectedCity, shippingRules]);
+
+  // Conversão de gramas para Kg para exibição comercial
   const totalWeightInKg = (cartTotalWeight / 1000).toFixed(2);
 
-  // Simulação de frete baseada no peso total acumulado das peças
-  // Regra: R$ 15,00 fixo + R$ 5,00 por quilo de mercadoria
-  const estimatedShipping =
-    cart.length > 0 ? 15 + (cartTotalWeight / 1000) * 5 : 0;
-
+  // CÁLCULO DE FRETE REAL: Taxa base da cidade + (Peso em Kg * Taxa por Kg da cidade)
+  const estimatedShipping = activeRule 
+    ? activeRule.base_fee + (cartTotalWeight / 1000) * activeRule.per_kg_fee 
+    : 0;
+  
   const orderTotal = cartTotal + estimatedShipping;
 
   if (cart.length === 0) {
@@ -42,15 +71,12 @@ export default function CartPage() {
           <div className="rounded-full bg-neutral-900 p-6 border border-neutral-800">
             <ShoppingBag className="h-10 w-10 text-neutral-600" />
           </div>
-          <h2 className="mt-6 text-xl font-bold text-white">
-            Seu carrinho está vazio
-          </h2>
+          <h2 className="mt-6 text-xl font-bold text-white">Seu carrinho está vazio</h2>
           <p className="mt-2 max-w-sm text-sm text-neutral-400">
-            Nenhuma ferramenta ou autopeça adicionada ainda. Explore o catálogo
-            do Elcomerc para encontrar o que precisa.
+            Nenhuma ferramenta ou autopeça adicionada ainda. Explore o catálogo do Elcomerc para encontrar o que precisa.
           </p>
-          <Link
-            href="/"
+          <Link 
+            href="/" 
             className="mt-6 rounded-md bg-orange-500 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-black hover:bg-orange-400 transition-colors font-mono"
           >
             Voltar para as compras
@@ -70,19 +96,19 @@ export default function CartPage() {
         </h1>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          {/* COLUNA ESQUERDA: LISTA DE ITENS (8 colunas) */}
+          
+          {/* COLUNA ESQUERDA: LISTA DE ITENS */}
           <div className="lg:col-span-8 flex flex-col gap-4">
             {cart.map((item) => (
-              <div
+              <div 
                 key={item.product.id}
                 className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900 p-4 gap-4 transition-all hover:border-neutral-700"
               >
-                {/* Imagem e Detalhes principais */}
                 <div className="flex items-center gap-4 w-full sm:w-auto">
                   <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-neutral-800 bg-neutral-950">
-                    <img
-                      src={item.product.image_url}
-                      alt={item.product.name}
+                    <img 
+                      src={item.product.image_url} 
+                      alt={item.product.name} 
                       className="h-full w-full object-cover"
                     />
                   </div>
@@ -90,38 +116,27 @@ export default function CartPage() {
                     <span className="text-[9px] font-mono font-bold tracking-wider text-orange-500 uppercase">
                       {item.product.categories?.name || "Geral"}
                     </span>
-                    <h3 className="text-sm font-bold text-white line-clamp-1">
-                      {item.product.name}
-                    </h3>
+                    <h3 className="text-sm font-bold text-white line-clamp-1">{item.product.name}</h3>
                     <div className="mt-1 flex items-center gap-3 text-xs text-neutral-400 font-mono">
                       <span className="flex items-center gap-1">
-                        <Package className="h-3 w-3 text-neutral-500" />{" "}
-                        {item.product.weight}g
+                        <Package className="h-3 w-3 text-neutral-500" /> {item.product.weight}g
                       </span>
                       <span>Estoque: {item.product.stock} un</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Controles de Quantidade e Preço */}
                 <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pt-3 sm:pt-0 border-t border-neutral-800 sm:border-none">
-                  {/* Seletor */}
                   <div className="flex items-center justify-between rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 w-24">
-                    <button
-                      onClick={() =>
-                        updateQuantity(item.product.id, item.quantity - 1)
-                      }
+                    <button 
+                      onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                       className="text-neutral-500 hover:text-white transition-colors"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
-                    <span className="font-mono text-xs font-bold text-white">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() =>
-                        updateQuantity(item.product.id, item.quantity + 1)
-                      }
+                    <span className="font-mono text-xs font-bold text-white">{item.quantity}</span>
+                    <button 
+                      onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                       className="text-neutral-500 hover:text-white transition-colors disabled:opacity-20"
                       disabled={item.quantity >= item.product.stock}
                     >
@@ -129,19 +144,14 @@ export default function CartPage() {
                     </button>
                   </div>
 
-                  {/* Preço Acumulado */}
                   <div className="text-right font-mono min-w-[90px]">
                     <p className="text-xs text-neutral-400">Total item</p>
                     <p className="text-sm font-bold text-white">
-                      {(item.product.price * item.quantity).toLocaleString(
-                        "pt-BR",
-                        { style: "currency", currency: "BRL" },
-                      )}
+                      {(item.product.price * item.quantity).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                     </p>
                   </div>
 
-                  {/* Botão Deletar */}
-                  <button
+                  <button 
                     onClick={() => removeFromCart(item.product.id)}
                     className="text-neutral-500 hover:text-red-500 transition-colors p-1"
                     title="Remover produto"
@@ -152,8 +162,7 @@ export default function CartPage() {
               </div>
             ))}
 
-            {/* Ações Auxiliares */}
-            <button
+            <button 
               onClick={clearCart}
               className="text-left text-xs font-mono text-neutral-500 hover:text-red-400 transition-colors mt-2"
             >
@@ -161,82 +170,88 @@ export default function CartPage() {
             </button>
           </div>
 
-          {/* COLUNA DIREITA: RESUMO FINANCEIRO E LOGÍSTICO (4 colunas) */}
+          {/* COLUNA DIREITA: CALCULO LOGÍSTICO E FINANÇAS */}
           <div className="lg:col-span-4">
-            <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6 sticky top-24">
-              <h2 className="text-xs font-bold font-mono tracking-wider text-neutral-400 uppercase mb-4">
-                Resumo do Pedido
-              </h2>
-
-              <div className="space-y-3 font-mono text-xs border-b border-neutral-800 pb-4">
-                <div className="flex justify-between text-neutral-400">
-                  <span>Subtotal itens</span>
-                  <span className="text-neutral-200">
-                    {cartTotal.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </span>
-                </div>
-
-                {/* Peso cubado aparente para clareza operacional */}
-                <div className="flex justify-between text-neutral-400">
-                  <span className="flex items-center gap-1">
-                    <Package className="h-3.5 w-3.5 text-neutral-500" /> Peso
-                    Total
-                  </span>
-                  <span className="text-neutral-200 font-bold">
-                    {totalWeightInKg} kg
-                  </span>
-                </div>
-
-                <div className="flex justify-between text-neutral-400">
-                  <span className="flex items-center gap-1">
-                    <Truck className="h-3.5 w-3.5 text-orange-500/70" /> Frete
-                    estimado
-                  </span>
-                  <span className="text-green-400 font-bold">
-                    {estimatedShipping.toLocaleString("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    })}
-                  </span>
-                </div>
+            <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6 sticky top-24 space-y-6">
+              
+              {/* Seletor Logístico de Localidade */}
+              <div>
+                <h2 className="text-xs font-bold font-mono tracking-wider text-neutral-400 uppercase mb-3 flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 text-orange-500" /> Selecione a Região
+                </h2>
+                {loadingShipping ? (
+                  <div className="h-10 w-full animate-pulse rounded-md bg-neutral-950 border border-neutral-800" />
+                ) : (
+                  <select
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    className="w-full rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2.5 font-mono text-xs text-neutral-200 transition-colors focus:border-orange-500 focus:outline-none"
+                  >
+                    <option value="">Selecione sua cidade...</option>
+                    {shippingRules.map((rule) => (
+                      <option key={rule.id} value={rule.city_name}>
+                        {rule.city_name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
-              {/* Total Geral */}
-              <div className="flex items-baseline justify-between font-mono pt-4 mb-6">
-                <span className="text-sm font-bold text-white uppercase">
-                  Total
-                </span>
-                <span className="text-xl font-black text-orange-500">
-                  {orderTotal.toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
-                </span>
+              <div className="border-t border-neutral-800 pt-4">
+                <h2 className="text-xs font-bold font-mono tracking-wider text-neutral-400 uppercase mb-4">
+                  Resumo do Pedido
+                </h2>
+
+                <div className="space-y-3 font-mono text-xs border-b border-neutral-800 pb-4">
+                  <div className="flex justify-between text-neutral-400">
+                    <span>Subtotal itens</span>
+                    <span className="text-neutral-200">
+                      {cartTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between text-neutral-400">
+                    <span className="flex items-center gap-1"><Package className="h-3.5 w-3.5 text-neutral-500" /> Peso Total</span>
+                    <span className="text-neutral-200 font-bold">{totalWeightInKg} kg</span>
+                  </div>
+
+                  <div className="flex justify-between text-neutral-400">
+                    <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-orange-500/70" /> Frete calculado</span>
+                    <span className={activeRule ? "text-green-400 font-bold" : "text-neutral-500 italic"}>
+                      {activeRule 
+                        ? estimatedShipping.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) 
+                        : "Selecione a cidade"}
+                    </span>
+                  </div>
+
+                  {activeRule && (
+                    <div className="text-[10px] text-right text-neutral-500 animate-in fade-in duration-200">
+                      Prazo estimado: {activeRule.estimated_days} {activeRule.estimated_days === 1 ? 'dia útil' : 'dias úteis'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Total Geral */}
+                <div className="flex items-baseline justify-between font-mono pt-4 mb-6">
+                  <span className="text-sm font-bold text-white uppercase">Total</span>
+                  <span className="text-xl font-black text-orange-500">
+                    {orderTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </span>
+                </div>
+
+                {/* Botão de Checkout Final */}
+                <button 
+                  disabled={!selectedCity}
+                  onClick={() => alert(`Pedido simulado com sucesso para ${selectedCity}! Total: R$ ${orderTotal.toFixed(2)}`)}
+                  className="w-full flex items-center justify-center gap-2 rounded-md bg-orange-500 py-3 text-sm font-black text-black hover:bg-orange-400 transition-colors uppercase font-mono disabled:opacity-40 disabled:hover:bg-orange-500"
+                >
+                  Fechar Pedido <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
 
-              {/* Botão de Checkout Final */}
-              <button
-                onClick={() =>
-                  alert(
-                    "Pronto! Integração com gateway ou WhatsApp do catálogo vêm na sequência.",
-                  )
-                }
-                className="w-full flex items-center justify-center gap-2 rounded-md bg-orange-500 py-3 text-sm font-black text-black hover:bg-orange-400 transition-colors uppercase font-mono"
-              >
-                Fechar Pedido <ArrowRight className="h-4 w-4" />
-              </button>
-
-              <Link
-                href="/"
-                className="block text-center text-xs font-mono text-neutral-400 hover:text-white transition-colors mt-4"
-              >
-                Continuar comprando
-              </Link>
             </div>
           </div>
+
         </div>
       </main>
     </>
