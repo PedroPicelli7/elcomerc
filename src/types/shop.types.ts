@@ -1,5 +1,11 @@
 // src/types/shop.types.ts
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -7,9 +13,10 @@ export interface Product {
   description?: string;
   price: number;
   image_url: string;
-  category: string;
-  weight: number; // Em gramas (ex: 1500 para 1.5kg) - Essencial para o frete futuro
+  weight: number; 
   stock: number;
+  category_id: string;
+  categories?: Category; // Campo injetado quando fazemos o JOIN relacional do Supabase
 }
 
 export interface CartItem {

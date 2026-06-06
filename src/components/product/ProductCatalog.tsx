@@ -20,15 +20,19 @@ export function ProductCatalog() {
 
   // Filtro combinado inteligente (Filtra por Categoria E por Texto via Debounce)
   const filteredProducts = MOCK_PRODUCTS.filter((product) => {
-    const matchesCategory = selectedCategory === "Todas" || product.category === selectedCategory;
+    // CORREÇÃO: Verifica tanto a propriedade antiga plana quanto a nova relacional do banco
+    const productCategoryName = product.categories?.name || (product as any).category;
+    
+    const matchesCategory = selectedCategory === "Todas" || productCategoryName === selectedCategory;
+    
     const matchesSearch = product.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
                           product.description?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+                          
     return matchesCategory && matchesSearch;
   });
 
   return (
     <section className="w-full">
-      
       {/* Barra de Filtros e Busca Local */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Input de Busca Estilo Tech */}
@@ -42,11 +46,16 @@ export function ProductCatalog() {
             className="w-full rounded-lg border border-neutral-800 bg-neutral-900 py-2.5 pl-10 pr-4 text-sm text-neutral-200 placeholder-neutral-500 transition-all focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           />
         </div>
-        
+
         {/* Indicador de quantidade de itens encontrados */}
         <div className="flex items-center gap-2 text-xs font-mono text-neutral-400">
           <SlidersHorizontal className="h-3.5 w-3.5 text-neutral-500" />
-          <span>{filteredProducts.length} {filteredProducts.length === 1 ? 'produto encontrado' : 'produtos encontrados'}</span>
+          <span>
+            {filteredProducts.length}{" "}
+            {filteredProducts.length === 1
+              ? "produto encontrado"
+              : "produtos encontrados"}
+          </span>
         </div>
       </div>
 
@@ -76,7 +85,9 @@ export function ProductCatalog() {
       {filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {filteredProducts.map((product) => {
-            const isAlreadyInCart = cart.some((item) => item.product.id === product.id);
+            const isAlreadyInCart = cart.some(
+              (item) => item.product.id === product.id,
+            );
 
             return (
               <div
@@ -96,13 +107,16 @@ export function ProductCatalog() {
                   />
                 </Link>
 
-                {/* Info */}
                 <div className="flex flex-1 flex-col pt-4">
+                  {/* CORREÇÃO AQUI: Acessando o nome da categoria vinda do JOIN */}
                   <span className="text-[10px] font-bold tracking-wider text-orange-500 uppercase font-mono">
-                    {product.category}
+                    {product.categories?.name || "Geral"}
                   </span>
 
-                  <Link href={`/produto/${product.slug}`} className="mt-1 block">
+                  <Link
+                    href={`/produto/${product.slug}`}
+                    className="mt-1 block"
+                  >
                     <h3 className="text-sm font-bold text-neutral-100 group-hover:text-orange-500 transition-colors line-clamp-1">
                       {product.name}
                     </h3>
@@ -145,9 +159,14 @@ export function ProductCatalog() {
       ) : (
         /* Estado Vazio de Busca */
         <div className="rounded-xl border border-dashed border-neutral-800 p-12 text-center">
-          <p className="text-sm text-neutral-400">Nenhum produto corresponde à sua busca atual.</p>
-          <button 
-            onClick={() => { setSearchQuery(""); setSelectedCategory("Todas"); }}
+          <p className="text-sm text-neutral-400">
+            Nenhum produto corresponde à sua busca atual.
+          </p>
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setSelectedCategory("Todas");
+            }}
             className="mt-3 text-xs font-mono text-orange-500 hover:underline"
           >
             [ Limpar filtros ]
