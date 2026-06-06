@@ -16,10 +16,9 @@ export default function RegisterPage() {
       setErrorMessage(null);
 
       // Descobre a URL base do site dinamicamente (local ou produção na Vercel)
-      const redirectToUrl =
-        typeof window !== "undefined"
-          ? `${window.location.origin}/`
-          : "https://elcomerc.vercel.app/";
+      const redirectToUrl = process.env.NODE_ENV === "production"
+        ? "https://elcomerc.vercel.app/"
+        : "http://localhost:3000/";
 
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",

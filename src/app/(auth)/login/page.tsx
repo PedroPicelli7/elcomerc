@@ -15,9 +15,10 @@ export default function LoginPage() {
       setIsLoading(true);
       setErrorMessage(null);
 
-      const redirectToUrl = typeof window !== "undefined" 
-        ? `${window.location.origin}/` 
-        : "https://elcomerc.vercel.app/";
+      const redirectToUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://elcomerc.vercel.app/"
+          : "http://localhost:3000/";
 
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
@@ -29,16 +30,16 @@ export default function LoginPage() {
       if (error) throw error;
     } catch (error: any) {
       console.error("Erro no login com Google:", error);
-      setErrorMessage(error.message || "Ocorreu um erro ao tentar conectar com o Google.");
+      setErrorMessage(
+        error.message || "Ocorreu um erro ao tentar conectar com o Google.",
+      );
       setIsLoading(false);
     }
   };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-neutral-950 px-4 py-12 sm:px-6 lg:px-8">
-      
       <div className="w-full max-w-md space-y-8 rounded-2xl border border-neutral-800 bg-neutral-900 p-8 shadow-2xl">
-        
         {/* Header do Box */}
         <div className="flex flex-col items-center text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-black">
@@ -96,15 +97,20 @@ export default function LoginPage() {
         <div className="mt-6 border-t border-neutral-800 pt-6 text-center text-xs font-mono">
           <p className="text-neutral-500">
             Novo por aqui?{" "}
-            <Link href="/cadastro" className="text-orange-500 hover:underline inline-flex items-center gap-0.5">
+            <Link
+              href="/cadastro"
+              className="text-orange-500 hover:underline inline-flex items-center gap-0.5"
+            >
               Criar uma conta <ArrowRight className="h-3 w-3" />
             </Link>
           </p>
         </div>
-
       </div>
 
-      <Link href="/" className="mt-6 text-xs font-mono text-neutral-500 hover:text-neutral-300 transition-colors">
+      <Link
+        href="/"
+        className="mt-6 text-xs font-mono text-neutral-500 hover:text-neutral-300 transition-colors"
+      >
         [ Voltar para a vitrine principal ]
       </Link>
     </div>
