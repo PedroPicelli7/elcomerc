@@ -165,29 +165,44 @@ export default function AlmoxarifadoPage() {
       setIsSavingMass(true);
       setStatusMessage(null);
 
-      if (!jsonInput.trim()) throw new Error("Campo vazio.");
+      if (!jsonInput.trim()) throw new Error("O campo de texto está vazio.");
       const parsedProducts = JSON.parse(jsonInput);
-      if (!Array.isArray(parsedProducts)) throw new Error("Precisa ser um array.");
+      if (!Array.isArray(parsedProducts)) throw new Error("O formato inserido precisa ser um Array de objetos [{}].");
 
-      const sanitizedProducts = parsedProducts.map((prod: any) => ({
-        name: prod.name,
-        slug: prod.slug || prod.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-        description: prod.description || "",
-        price: Number(prod.price),
-        image_url: prod.image_url || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500",
-        weight: Number(prod.weight) || 0,
-        stock: Number(prod.stock) || 0,
-        category_id: prod.category_id
-      }));
+      const sanitizedProducts = parsedProducts.map((prod: any) => {
+        const item: any = {
+          name: prod.name,
+          slug: prod.slug || prod.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+          description: prod.description || "Sem descrição disponível.",
+          price: Number(prod.price) || 0,
+          image_url: prod.image_url || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500",
+          weight: Number(prod.weight) || 500,
+          stock: Number(prod.stock) || 0
+        };
+
+        // Só injeta o category_id se ele realmente existir no JSON para não violar o banco
+        if (prod.category_id && prod.category_id.trim() !== "") {
+          item.category_id = prod.category_id;
+        }
+
+        return item;
+      });
 
       const { error } = await supabaseClient.from("products").insert(sanitizedProducts);
-      if (error) throw error;
+      
+      if (error) {
+        // Se o banco rejeitar, jogamos o erro na tela para você ver qual coluna barrou
+        console.error("Erro retornado do Supabase:", error);
+        throw new Error(`Erro no Supabase: ${error.message} (Código: ${error.code})`);
+      }
 
-      setStatusMessage({ type: "success", text: `${sanitizedProducts.length} produtos importados!` });
+      setStatusMessage({ type: "success", text: `${sanitizedProducts.length} produtos importados com sucesso!` });
       setJsonInput("");
       loadData();
     } catch (err: any) {
+      console.error(err);
       setStatusMessage({ type: "error", text: err.message });
+      alert(`Falha na importação:\n${err.message}`);
     } finally {
       setIsSavingMass(false);
     }
