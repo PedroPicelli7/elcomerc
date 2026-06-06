@@ -44,7 +44,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-cyan/10 border border-brand-cyan/20 shadow-lg shadow-brand-cyan/5">
             <img 
-              src="/logo-symbol.svg" 
+              src="/icon.png" 
               alt="ELCOMERC Symbol" 
               className="h-8 w-auto object-contain animate-pulse" 
             />
