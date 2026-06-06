@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Header } from "@/components/common/Header";
 import { useCart } from "@/context/CartContext";
 import { ShippingRule } from "@/services/api/products";
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck, Package, MapPin } from "lucide-react";
+import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck, Package, MapPin, Map } from "lucide-react";
 
 export default function CartPage() {
   const { 
@@ -18,9 +18,11 @@ export default function CartPage() {
     cartTotalWeight 
   } = useCart();
 
-  // Estados para gerenciar as regras de frete vindas do banco
+  // Estados para gerenciar as regras de frete e envio
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [shippingRules, setShippingRules] = useState<ShippingRule[]>([]);
-  const [selectedCity, setSelectedCity] = useState<string>("");
+  const [selectedCity, setSelectedCity] = useState<string>("Americana"); // Começa em Americana por padrão regional
   const [activeRule, setActiveRule] = useState<ShippingRule | null>(null);
   const [loadingShipping, setLoadingShipping] = useState<boolean>(true);
 
@@ -33,6 +35,9 @@ export default function CartPage() {
         const data = await res.json();
         if (Array.isArray(data)) {
           setShippingRules(data);
+          // Sincroniza a regra inicial caso Americana já venha carregada
+          const defaultRule = data.find(r => r.city_name === "Americana");
+          if (defaultRule) setActiveRule(defaultRule);
         }
       } catch (err) {
         console.error("Erro ao carregar cidades de frete:", err);
@@ -62,6 +67,42 @@ export default function CartPage() {
     : 0;
   
   const orderTotal = cartTotal + estimatedShipping;
+
+  // Handler transacional para disparar o checkout e salvar no Supabase
+  const handleCheckout = async () => {
+    if (!selectedCity || !deliveryAddress.trim()) {
+      alert("Por favor, selecione a cidade e insira o endereço de entrega completo.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cartItems: cart,
+          deliveryCity: selectedCity,
+          deliveryAddress: deliveryAddress.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Falha ao processar o fechamento do pedido.");
+      }
+
+      alert(`Pedido registrado com sucesso na Elcomerc!\nID do Pedido: ${data.orderId}`);
+      clearCart(); // Esvazia a sacola local
+      window.location.href = "/"; // Redireciona para a Home com o estoque atualizado
+    } catch (err: any) {
+      alert(err.message || "Ocorreu um erro ao fechar o pedido. Verifique se você realizou o login.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (cart.length === 0) {
     return (
@@ -170,13 +211,13 @@ export default function CartPage() {
             </button>
           </div>
 
-          {/* COLUNA DIREITA: CALCULO LOGÍSTICO E FINANÇAS */}
+          {/* COLUNA DIREITA: CÁLCULO LOGÍSTICO E RESUMO */}
           <div className="lg:col-span-4">
-            <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6 sticky top-24 space-y-6">
+            <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6 sticky top-24 space-y-5">
               
               {/* Seletor Logístico de Localidade */}
               <div>
-                <h2 className="text-xs font-bold font-mono tracking-wider text-neutral-400 uppercase mb-3 flex items-center gap-1.5">
+                <h2 className="text-xs font-bold font-mono tracking-wider text-neutral-400 uppercase mb-2.5 flex items-center gap-1.5">
                   <MapPin className="h-3.5 w-3.5 text-orange-500" /> Selecione a Região
                 </h2>
                 {loadingShipping ? (
@@ -195,6 +236,21 @@ export default function CartPage() {
                     ))}
                   </select>
                 )}
+              </div>
+
+              {/* Input do Endereço Completo */}
+              <div className="flex flex-col gap-1.5 font-mono text-xs text-neutral-300">
+                <label className="text-[10px] text-neutral-500 uppercase font-bold flex items-center gap-1.5">
+                  <Map className="h-3.5 w-3.5 text-orange-500" /> Endereço de Entrega *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Rua, número, bairro..."
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  className="w-full rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2.5 font-mono text-xs text-neutral-200 focus:border-orange-500 focus:outline-none placeholder-neutral-700"
+                />
               </div>
 
               <div className="border-t border-neutral-800 pt-4">
@@ -218,17 +274,11 @@ export default function CartPage() {
                   <div className="flex justify-between text-neutral-400">
                     <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-orange-500/70" /> Frete calculado</span>
                     <span className={activeRule ? "text-green-400 font-bold" : "text-neutral-500 italic"}>
-                        {activeRule 
+                      {activeRule 
                         ? estimatedShipping.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) 
                         : "Selecione a cidade"}
                     </span>
                   </div>
-
-                  {activeRule && (
-                    <div className="text-[10px] text-right text-neutral-500 animate-in fade-in duration-200">
-                      Prazo estimado: {activeRule.estimated_days} {activeRule.estimated_days === 1 ? 'dia útil' : 'dias úteis'}
-                    </div>
-                  )}
                 </div>
 
                 {/* Total Geral */}
@@ -239,13 +289,13 @@ export default function CartPage() {
                   </span>
                 </div>
 
-                {/* Botão de Checkout Final */}
+                {/* Botão de Checkout Final Conectado ao Backend */}
                 <button 
-                  disabled={!selectedCity}
-                  onClick={() => alert(`Pedido simulado com sucesso para ${selectedCity}! Total: R$ ${orderTotal.toFixed(2)}`)}
-                  className="w-full flex items-center justify-center gap-2 rounded-md bg-orange-500 py-3 text-sm font-black text-black hover:bg-orange-400 transition-colors uppercase font-mono disabled:opacity-40 disabled:hover:bg-orange-500"
+                  disabled={!selectedCity || !deliveryAddress.trim() || isSubmitting}
+                  onClick={handleCheckout}
+                  className="w-full flex items-center justify-center gap-2 rounded-md bg-orange-500 py-3 text-sm font-black text-black hover:bg-orange-400 transition-colors uppercase font-mono disabled:opacity-40"
                 >
-                  Fechar Pedido <ArrowRight className="h-4 w-4" />
+                  {isSubmitting ? "Processando Venda..." : "Fechar Pedido"} <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
 
