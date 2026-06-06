@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useSupabase } from "@/hooks/useSupabase";
 import { Header } from "@/components/common/Header";
 import { supabaseClient } from "@/services/supabase/client";
-import { PackagePlus, ArrowLeft, ShieldAlert, FileJson, Save, RefreshCw, PlusCircle, Package } from "lucide-react";
+import { ArrowLeft, ShieldAlert, FileJson, Save, RefreshCw, PlusCircle } from "lucide-react";
 import Link from "next/link";
 
 interface ProductRow {
@@ -13,7 +13,7 @@ interface ProductRow {
   name: string;
   price: number;
   stock: number;
-  categories?: { name: string };
+  categories?: { name: string } | null;
 }
 
 interface CategoryOption {
@@ -47,6 +47,7 @@ export default function AlmoxarifadoPage() {
   async function loadData() {
     try {
       setLoadingProducts(true);
+      setStatusMessage(null);
       
       // 1. Busca Produtos
       const { data: prodData, error: prodError } = await supabaseClient
@@ -56,7 +57,7 @@ export default function AlmoxarifadoPage() {
 
       if (prodError) throw prodError;
 
-      // 2. Busca Categorias cadastradas para o dropdown do seu pai
+      // 2. Busca Categorias cadastradas
       const { data: catData, error: catError } = await supabaseClient
         .from("categories")
         .select("id, name")
@@ -72,9 +73,10 @@ export default function AlmoxarifadoPage() {
         }))
       );
       setCategories(catData || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro ao carregar dados do almoxarifado:", err);
-    } fileee: {
+      setStatusMessage({ type: "error", text: "Erro ao carregar dados: " + err.message });
+    } finally {
       setLoadingProducts(false);
     }
   }
@@ -88,13 +90,15 @@ export default function AlmoxarifadoPage() {
   // Criação Individual de um novo produto
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!newProdName || !newProdPrice || !newProdStock || !newProdCategoryId) {
+      alert("Preencha todos os campos obrigatórios (Nome, Preço, Estoque e Categoria)!");
+      return;
+    }
+
     try {
       setIsCreating(true);
-
-      if (!newProdName || !newProdPrice || !newProdStock || !newProdCategoryId) {
-        alert("Preencha todos os campos obrigatórios (Nome, Preço, Estoque e Categoria)!");
-        return;
-      }
+      setStatusMessage(null);
 
       const generatedSlug = newProdName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
@@ -113,7 +117,7 @@ export default function AlmoxarifadoPage() {
 
       if (error) throw error;
 
-      alert("Novo produto cadastrado com sucesso!");
+      setStatusMessage({ type: "success", text: "Novo produto cadastrado com sucesso!" });
       
       // Limpa os campos do formulário
       setNewProdName("");
@@ -128,7 +132,7 @@ export default function AlmoxarifadoPage() {
       loadData();
     } catch (err: any) {
       console.error(err);
-      alert("Erro ao cadastrar produto: " + err.message);
+      setStatusMessage({ type: "error", text: "Erro ao cadastrar produto: " + err.message });
     } finally {
       setIsCreating(false);
     }
@@ -138,16 +142,17 @@ export default function AlmoxarifadoPage() {
   const handleUpdateIndividual = async (id: string, currentPrice: number, currentStock: number) => {
     try {
       setUpdatingId(id);
+      setStatusMessage(null);
       const { error } = await supabaseClient
         .from("products")
         .update({ price: currentPrice, stock: currentStock })
         .eq("id", id);
 
       if (error) throw error;
-      alert("Alterações salvas com sucesso!");
+      setStatusMessage({ type: "success", text: "Alterações salvas com sucesso!" });
     } catch (err: any) {
       console.error(err);
-      alert("Falha ao salvar: " + err.message);
+      setStatusMessage({ type: "error", text: "Falha ao salvar: " + err.message });
     } finally {
       setUpdatingId(null);
     }
@@ -156,19 +161,6 @@ export default function AlmoxarifadoPage() {
   const handleLocalRowChange = (id: string, field: "price" | "stock", value: number) => {
     setProducts(prev => prev.map(p => (p.id === id ? { ...p, [field]: value } : p)));
   };
-
-  const placeholderExample = JSON.stringify([
-    {
-      "name": "Chave de Impacto Pneumática 1/2",
-      "slug": "chave-de-impacto-pneumatica-12",
-      "description": "Alta força de torque.",
-      "price": 389.90,
-      "image_url": "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=500",
-      "weight": 2100,
-      "stock": 10,
-      "category_id": "UUID_AQUI"
-    }
-  ], null, 2);
 
   const handleMassImport = async () => {
     try {
@@ -218,13 +210,24 @@ export default function AlmoxarifadoPage() {
       <Header />
       <main className="min-h-screen bg-neutral-950 px-4 py-8 sm:px-6 lg:px-8 mx-auto w-full max-w-5xl space-y-8">
         
-        <div>
+        <div className="flex items-center justify-between">
           <Link href="/admin" className="flex items-center gap-1 font-mono text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
             <ArrowLeft className="h-3.5 w-3.5" /> [ Voltar para o Painel Principal ]
           </Link>
+
+          {/* Banner de Status Feedback Dinâmico */}
+          {statusMessage && (
+            <div className={`font-mono text-[11px] px-3 py-1 rounded border ${
+              statusMessage.type === "success" 
+                ? "bg-emerald-950/30 border-emerald-800 text-emerald-400" 
+                : "bg-red-950/30 border-red-800 text-red-400"
+            }`}>
+              [ {statusMessage.text.toUpperCase()} ]
+            </div>
+          )}
         </div>
 
-        {/* FORMULÁRIO DE NOVO PRODUTO (NOVIDADE PARA O SEU PAI) */}
+        {/* FORMULÁRIO DE NOVO PRODUTO */}
         <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6 space-y-4">
           <div className="border-b border-neutral-800 pb-3 flex items-center gap-2">
             <PlusCircle className="h-5 w-5 text-orange-500" />
@@ -330,7 +333,7 @@ export default function AlmoxarifadoPage() {
           </form>
         </div>
 
-        {/* TABELA DE ATUALIZAÇÃO RÁPIDA (IGUAL À DO PRINT) */}
+        {/* TABELA DE ATUALIZAÇÃO RÁPIDA */}
         <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6 space-y-6">
           <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
             <div>
@@ -342,7 +345,7 @@ export default function AlmoxarifadoPage() {
               onClick={loadData}
               className="p-2 rounded border border-neutral-800 bg-neutral-950 text-neutral-400 hover:text-white transition-colors"
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className={`h-4 w-4 ${loadingProducts ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
@@ -399,15 +402,15 @@ export default function AlmoxarifadoPage() {
           )}
         </div>
 
-        {/* SEÇÃO 2: IMPORTAÇÃO EM MASSA (JSON PARA SEU APOIO) */}
+        {/* SEÇÃO 2: IMPORTAÇÃO EM MASSA */}
         <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-6 space-y-4">
           <div className="border-b border-neutral-800 pb-3">
             <h2 className="text-sm font-bold text-neutral-400 font-mono uppercase tracking-tight flex items-center gap-2">
               <FileJson className="h-4 w-4 text-neutral-500" /> Importador Avançado em Lote (Backup/JSON)
             </h2>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8 space-y-3">
+          <div className="grid grid-cols-1 gap-6">
+            <div className="space-y-3">
               <textarea
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
@@ -418,9 +421,9 @@ export default function AlmoxarifadoPage() {
                 <button
                   onClick={handleMassImport}
                   disabled={isSavingMass}
-                  className="flex-1 rounded bg-neutral-800 border border-neutral-700 hover:border-neutral-600 py-2 text-xs font-bold text-white uppercase font-mono"
+                  className="flex-1 rounded bg-neutral-800 border border-neutral-700 hover:border-neutral-600 py-2 text-xs font-bold text-white uppercase font-mono disabled:opacity-50"
                 >
-                  Importar em Bloco
+                  {isSavingMass ? "Importando dados..." : "Importar em Bloco"}
                 </button>
               </div>
             </div>
