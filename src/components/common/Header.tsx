@@ -2,13 +2,13 @@
 "use client";
 
 import Link from "next/link";
-import { Search, ShoppingBag, Wrench, User, LogOut } from "lucide-react";
+import { Search, ShoppingBag, Wrench, User, LogOut, LayoutDashboard } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSupabase } from "@/hooks/useSupabase";
 
 export function Header() {
   const { cartCount } = useCart();
-  const { user, logout, loading } = useSupabase();
+  const { user, role, logout, loading } = useSupabase();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-md">
@@ -40,12 +40,24 @@ export function Header() {
             <div className="flex items-center">
               {user ? (
                 <div className="flex items-center gap-3 border-r border-neutral-800 pr-4">
-                  {/* Nome do usuário em caixa alta font-mono */}
+                  
+                  {/* BOTÃO SECRETO DO ADMIN: Só aparece se role for 'admin' */}
+                  {role === "admin" && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-1 rounded border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 font-mono text-[10px] font-black text-orange-400 transition-all hover:bg-orange-500/25 hover:text-orange-300 animate-in fade-in duration-300"
+                    >
+                      <LayoutDashboard className="h-3 w-3" />
+                      <span>PAINEL ADM</span>
+                    </Link>
+                  )}
+
+                  {/* Nome do usuário em caixa alta */}
                   <span className="hidden font-mono text-xs font-bold tracking-tight text-neutral-300 md:block">
                     {user.user_metadata?.name?.split(" ")[0]?.toUpperCase() || "CLIENTE"}
                   </span>
                   
-                  {/* Botão de Sair Estilizado como um badge de Garage */}
+                  {/* Botão de Sair */}
                   <button
                     onClick={logout}
                     className="flex items-center gap-1 rounded border border-red-500/20 bg-red-500/10 px-2 py-1 font-mono text-[10px] font-black text-red-400 transition-all hover:bg-red-500/20 hover:text-red-300"
@@ -71,7 +83,7 @@ export function Header() {
           <Link href="/carrinho" className="relative rounded-md p-2 text-neutral-400 hover:text-white transition-colors">
             <ShoppingBag className="h-5 w-5" />
             {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 font-mono text-[10px] font-bold text-black animate-in fade-in zoom-in">
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 font-mono text-[10px] font-bold text-black">
                 {cartCount}
               </span>
             )}
