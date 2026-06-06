@@ -218,7 +218,7 @@ export default function CartPage() {
                   <div className="flex justify-between text-neutral-400">
                     <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-orange-500/70" /> Frete calculado</span>
                     <span className={activeRule ? "text-green-400 font-bold" : "text-neutral-500 italic"}>
-                      {activeRule 
+                        {activeRule 
                         ? estimatedShipping.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) 
                         : "Selecione a cidade"}
                     </span>
