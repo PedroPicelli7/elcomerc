@@ -160,16 +160,20 @@ export default function AdminDashboard() {
           
           {/* Caixa de Ferramenta 1: Controle de Pedidos */}
           <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6 flex flex-col justify-between group hover:border-neutral-700 transition-colors">
-            <div>
-              <h3 className="text-sm font-bold text-white font-mono uppercase tracking-tight">Gerenciador de Pedidos</h3>
-              <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
-                Acompanhe as vendas em tempo real, veja o endereço do cliente para entrega na região e mude o status para enviado ou finalizado.
-              </p>
-            </div>
-            <button className="mt-6 flex w-full items-center justify-center gap-1.5 rounded-lg bg-neutral-950 border border-neutral-800 text-xs font-bold font-mono text-neutral-300 py-3 transition-colors hover:bg-neutral-800 hover:text-white">
-              Abrir Controle de Pedidos <ArrowUpRight className="h-3.5 w-3.5 text-orange-500" />
-            </button>
+          <div>
+            <h3 className="text-sm font-bold text-white font-mono uppercase tracking-tight">Gerenciador de Pedidos</h3>
+            <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
+              Acompanhe as vendas em tempo real, veja o endereço do cliente para entrega na região e mude o status para enviado ou finalizado.
+            </p>
           </div>
+          {/* CORREÇÃO: Botão estático transformado em rota ativa */}
+          <Link 
+            href="/admin/pedidos" 
+            className="mt-6 flex w-full items-center justify-center gap-1.5 rounded-lg bg-neutral-950 border border-neutral-800 text-xs font-bold font-mono text-neutral-300 py-3 transition-colors hover:bg-neutral-800 hover:text-white"
+          >
+            Abrir Controle de Pedidos <ArrowUpRight className="h-3.5 w-3.5 text-orange-500" />
+          </Link>
+        </div>
 
           {/* Caixa de Ferramenta 2: Controle de Estoque */}
           <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6 flex flex-col justify-between group hover:border-neutral-700 transition-colors">
