@@ -23,3 +23,11 @@ export interface CartItem {
   product: Product;
   quantity: number;
 }
+
+export interface ShippingRule {
+  id: string;
+  city_name: string;
+  base_fee: number;
+  per_kg_fee: number;
+  estimated_days: number;
+}

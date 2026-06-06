@@ -53,3 +53,36 @@ export async function getProducts(): Promise<Product[]> {
     return [];
   }
 }
+
+export interface ShippingRule {
+  id: string;
+  city_name: string;
+  base_fee: number;
+  per_kg_fee: number;
+  estimated_days: number;
+}
+
+export async function getShippingRules(): Promise<ShippingRule[]> {
+  const supabase = await createSupabaseServerClient();
+
+  try {
+    const query = supabase
+      .from("shipping_rules")
+      .select("id, city_name, base_fee, per_kg_fee, estimated_days")
+      .order("city_name");
+
+    const { data, error } = await withTimeout<any>(query as any);
+
+    if (error) throw error;
+
+    return (data as any[])?.map((rule) => ({
+      ...rule,
+      base_fee: Number(rule.base_fee),
+      per_kg_fee: Number(rule.per_kg_fee),
+    })) || [];
+    
+  } catch (error) {
+    console.error("Erro ao buscar regras de frete:", error);
+    return [];
+  }
+}
