@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { Search, ShoppingBag, Wrench, User, LogOut, LayoutDashboard } from "lucide-react";
+import { ShoppingBag, Wrench, User, LogOut, LayoutDashboard, ClipboardList } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSupabase } from "@/hooks/useSupabase";
 
@@ -20,17 +20,7 @@ export function Header() {
           EL<span className="text-orange-500">COMERC</span>
         </Link>
 
-        {/* Barra de Busca (Desktop) */}
-        <div className="hidden max-w-md flex-1 px-6 md:block">
-          <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-500" />
-            <input
-              type="text"
-              placeholder="Buscar ferramentas, LEDs, óleos..."
-              className="w-full rounded-md border border-neutral-800 bg-neutral-900 py-1.5 pl-10 pr-4 text-sm text-neutral-200 placeholder-neutral-500 transition-colors focus:border-orange-500 focus:outline-none"
-            />
-          </div>
-        </div>
+        {/* NOTA: A barra de pesquisa redundante que ocupava o centro foi removida deste bloco */}
 
         {/* Ações / Área do Usuário / Carrinho */}
         <div className="flex items-center gap-4">
@@ -39,20 +29,31 @@ export function Header() {
           {!loading && (
             <div className="flex items-center">
               {user ? (
-                <div className="flex items-center gap-3 border-r border-neutral-800 pr-4">
+                <div className="flex items-center gap-2.5 border-r border-neutral-800 pr-4 sm:gap-3">
                   
-                  {/* BOTÃO SECRETO DO ADMIN: Só aparece se role for 'admin' */}
+                  {/* BOTÃO DO CLIENTE: Histórico de Compras Pessoal */}
+                  <Link
+                    href="/pedidos"
+                    className="flex items-center gap-1 rounded border border-neutral-800 bg-neutral-900/50 px-2.5 py-1 font-mono text-[10px] font-bold text-neutral-300 transition-all hover:border-neutral-700 hover:text-white"
+                    title="Ver minhas compras"
+                  >
+                    <ClipboardList className="h-3 w-3 text-orange-500/80" />
+                    <span className="hidden sm:inline">MEUS PEDIDOS</span>
+                    <span className="sm:hidden">PEDIDOS</span>
+                  </Link>
+
+                  {/* BOTÃO SECRETO DO ADMIN: Exibido apenas para a gerência */}
                   {role === "admin" && (
                     <Link
                       href="/admin"
-                      className="flex items-center gap-1 rounded border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 font-mono text-[10px] font-black text-orange-400 transition-all hover:bg-orange-500/25 hover:text-orange-300 animate-in fade-in duration-300"
+                      className="flex items-center gap-1 rounded border border-orange-500/20 bg-orange-500/10 px-2.5 py-1 font-mono text-[10px] font-black text-orange-400 transition-all hover:bg-orange-500/25 hover:text-orange-300"
                     >
                       <LayoutDashboard className="h-3 w-3" />
-                      <span>PAINEL ADM</span>
+                      <span>ADM</span>
                     </Link>
                   )}
 
-                  {/* Nome do usuário em caixa alta */}
+                  {/* Nome do usuário (Ocultado em telas muito pequenas para não quebrar layout) */}
                   <span className="hidden font-mono text-xs font-bold tracking-tight text-neutral-300 md:block">
                     {user.user_metadata?.name?.split(" ")[0]?.toUpperCase() || "CLIENTE"}
                   </span>
