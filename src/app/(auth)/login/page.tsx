@@ -15,10 +15,9 @@ export default function LoginPage() {
       setIsLoading(true);
       setErrorMessage(null);
 
-      const redirectToUrl =
-        process.env.NODE_ENV === "production"
-          ? "https://elcomerc.vercel.app/"
-          : "http://localhost:3000/";
+      const redirectToUrl = typeof window !== "undefined"
+        ? `${window.location.origin}/`
+        : "https://elcomerc.vercel.app/";
 
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
