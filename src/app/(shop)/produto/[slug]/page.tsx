@@ -6,7 +6,15 @@ import { useParams, useRouter } from "next/navigation";
 import { Header } from "@/components/common/Header";
 import { MOCK_PRODUCTS } from "@/utils/products.mock";
 import { useCart } from "@/context/CartContext";
-import { ChevronLeft, ShieldCheck, Truck, Package, Plus, Minus, ShoppingCart } from "lucide-react";
+import {
+  ChevronLeft,
+  ShieldCheck,
+  Truck,
+  Package,
+  Plus,
+  Minus,
+  ShoppingCart,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function ProductDetail() {
@@ -24,9 +32,16 @@ export default function ProductDetail() {
       <>
         <Header />
         <div className="flex flex-1 flex-col items-center justify-center bg-neutral-950 px-4 text-center">
-          <h2 className="text-xl font-bold text-white">Produto não encontrado</h2>
-          <p className="mt-2 text-sm text-neutral-400">O item que você busca não existe ou foi removido.</p>
-          <Link href="/" className="mt-4 rounded-md bg-orange-500 px-4 py-2 text-xs font-bold text-black hover:bg-orange-400 font-mono">
+          <h2 className="text-xl font-bold text-white">
+            Produto não encontrado
+          </h2>
+          <p className="mt-2 text-sm text-neutral-400">
+            O item que você busca não existe ou foi removido.
+          </p>
+          <Link
+            href="/"
+            className="mt-4 rounded-md bg-orange-500 px-4 py-2 text-xs font-bold text-black hover:bg-orange-400 font-mono"
+          >
             Voltar para a Home
           </Link>
         </div>
@@ -53,7 +68,7 @@ export default function ProductDetail() {
 
       <main className="flex-1 bg-neutral-950 px-4 py-6 sm:px-6 lg:px-8 mx-auto w-full max-w-7xl">
         {/* Botão Voltar */}
-        <button 
+        <button
           onClick={() => router.back()}
           className="mb-6 flex items-center gap-1 text-xs font-mono text-neutral-400 hover:text-white transition-colors"
         >
@@ -62,7 +77,6 @@ export default function ProductDetail() {
 
         {/* Layout de Duas Colunas */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          
           {/* Coluna Esquerda: Imagem */}
           <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900 p-2 flex items-center justify-center aspect-square max-h-[500px]">
             <img
@@ -76,18 +90,26 @@ export default function ProductDetail() {
           <div className="flex flex-col justify-between">
             <div>
               <span className="text-xs font-bold tracking-widest text-orange-500 uppercase font-mono">
-                {product.category}
+                {/* CORREÇÃO: Lê o nome da categoria vinda do JOIN relacional de forma segura */}
+                {product.categories?.name ||
+                  (product as any).category ||
+                  "Geral"}
               </span>
               <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
                 {product.name}
               </h1>
-              
+
               <p className="mt-4 text-base font-black text-orange-500 text-2xl font-mono">
-                {product.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                {product.price.toLocaleString("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
               </p>
 
               <div className="mt-6 border-t border-b border-neutral-800 py-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 font-mono">Descrição</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 font-mono">
+                  Descrição
+                </h3>
                 <p className="mt-2 text-sm text-neutral-300 leading-relaxed">
                   {product.description}
                 </p>
@@ -97,11 +119,21 @@ export default function ProductDetail() {
               <div className="mt-6 grid grid-cols-2 gap-4 bg-neutral-900/50 p-4 rounded-lg border border-neutral-800/60">
                 <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono">
                   <Package className="h-4 w-4 text-neutral-500" />
-                  <span>Peso: <strong className="text-neutral-200">{product.weight}g</strong></span>
+                  <span>
+                    Peso:{" "}
+                    <strong className="text-neutral-200">
+                      {product.weight}g
+                    </strong>
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono">
                   <ShieldCheck className="h-4 w-4 text-neutral-500" />
-                  <span>Estoque: <strong className="text-neutral-200">{product.stock} un</strong></span>
+                  <span>
+                    Estoque:{" "}
+                    <strong className="text-neutral-200">
+                      {product.stock} un
+                    </strong>
+                  </span>
                 </div>
               </div>
             </div>
@@ -109,18 +141,19 @@ export default function ProductDetail() {
             {/* Ações de Compra Finais */}
             <div className="mt-8 border-t border-neutral-800 pt-6">
               <div className="flex flex-col sm:flex-row gap-4">
-                
                 {/* Seletor de Quantidade */}
                 <div className="flex items-center justify-between rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 sm:w-32">
-                  <button 
+                  <button
                     onClick={() => handleQuantityChange("decrease")}
                     className="text-neutral-400 hover:text-white transition-colors disabled:opacity-30"
                     disabled={quantity <= 1}
                   >
                     <Minus className="h-4 w-4" />
                   </button>
-                  <span className="font-mono text-sm font-bold text-white">{quantity}</span>
-                  <button 
+                  <span className="font-mono text-sm font-bold text-white">
+                    {quantity}
+                  </span>
+                  <button
                     onClick={() => handleQuantityChange("increase")}
                     className="text-neutral-400 hover:text-white transition-colors disabled:opacity-30"
                     disabled={quantity >= product.stock}
@@ -136,16 +169,17 @@ export default function ProductDetail() {
                 >
                   <ShoppingCart className="h-4 w-4" /> Adicionar ao Carrinho
                 </button>
-
               </div>
 
               {/* Info de Entrega Rápida */}
               <div className="mt-4 flex items-center gap-2 text-[11px] text-neutral-500 font-mono">
                 <Truck className="h-3.5 w-3.5 text-orange-500/70" />
-                <span>Envio imediato via transportadora com cálculo de peso dinâmico.</span>
+                <span>
+                  Envio imediato via transportadora com cálculo de peso
+                  dinâmico.
+                </span>
               </div>
             </div>
-
           </div>
         </div>
       </main>
