@@ -169,7 +169,11 @@ export default function AlmoxarifadoPage() {
       const parsedProducts = JSON.parse(jsonInput);
       if (!Array.isArray(parsedProducts)) throw new Error("O formato inserido precisa ser um Array de objetos [{}].");
 
-      const sanitizedProducts = parsedProducts.map((prod: any) => {
+      let cadastrados = 0;
+      let erros = 0;
+
+      // Percorre um por um de forma síncrona para que o RLS autentique cada inserção individualmente
+      for (const prod of parsedProducts) {
         const item: any = {
           name: prod.name,
           slug: prod.slug || prod.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
@@ -180,25 +184,36 @@ export default function AlmoxarifadoPage() {
           stock: Number(prod.stock) || 0
         };
 
-        // Só injeta o category_id se ele realmente existir no JSON para não violar o banco
+        // Mantém a segurança de ignorar categorias vazias ou nulas
         if (prod.category_id && prod.category_id.trim() !== "") {
           item.category_id = prod.category_id;
         }
 
-        return item;
-      });
-
-      const { error } = await supabaseClient.from("products").insert(sanitizedProducts);
-      
-      if (error) {
-        // Se o banco rejeitar, jogamos o erro na tela para você ver qual coluna barrou
-        console.error("Erro retornado do Supabase:", error);
-        throw new Error(`Erro no Supabase: ${error.message} (Código: ${error.code})`);
+        // Executa o Insert individual
+        const { error } = await supabaseClient.from("products").insert(item);
+        
+        if (error) {
+          console.error(`Falha ao inserir o item [${prod.name}]:`, error.message);
+          erros++;
+        } else {
+          cadastrados++;
+        }
+        
+        // Atualiza o status dinamicamente no painel durante o processamento
+        setStatusMessage({ 
+          type: "success", 
+          text: `Processando: ${cadastrados} inseridos... (${erros} falhas)` 
+        });
       }
 
-      setStatusMessage({ type: "success", text: `${sanitizedProducts.length} produtos importados com sucesso!` });
-      setJsonInput("");
-      loadData();
+      if (cadastrados > 0) {
+        setStatusMessage({ type: "success", text: `${cadastrados} produtos adicionados com sucesso!` });
+        setJsonInput("");
+        loadData();
+      } else {
+        throw new Error("Nenhum produto pôde ser inserido. Verifique as políticas de RLS ou IDs de Categoria.");
+      }
+
     } catch (err: any) {
       console.error(err);
       setStatusMessage({ type: "error", text: err.message });
