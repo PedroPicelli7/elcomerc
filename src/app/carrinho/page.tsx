@@ -68,57 +68,21 @@ export default function CartPage() {
   
   const orderTotal = cartTotal + estimatedShipping;
 
-  // Handler transacional para disparar o checkout e salvar no Supabase
-  const handleCheckout = async () => {
-    if (!selectedCity || !deliveryAddress.trim()) {
-      alert("Por favor, selecione a cidade e insira o endereço de entrega completo.");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cartItems: cart,
-          deliveryCity: selectedCity,
-          deliveryAddress: deliveryAddress.trim(),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Falha ao processar o fechamento do pedido.");
-      }
-
-      alert(`Pedido registrado com sucesso na Elcomerc!\nID do Pedido: ${data.orderId}`);
-      clearCart(); // Esvazia a sacola local
-      window.location.href = "/"; // Redireciona para a Home com o estoque atualizado
-    } catch (err: any) {
-      alert(err.message || "Ocorreu um erro ao fechar o pedido. Verifique se você realizou o login.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   if (cart.length === 0) {
     return (
       <>
         <Header />
-        <div className="flex flex-1 flex-col items-center justify-center bg-neutral-950 px-4 text-center">
+        <div className="flex flex-1 min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-neutral-950 px-4 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="rounded-full bg-neutral-900 p-6 border border-neutral-800">
             <ShoppingBag className="h-10 w-10 text-neutral-600" />
           </div>
-          <h2 className="mt-6 text-xl font-bold text-white">Seu carrinho está vazio</h2>
-          <p className="mt-2 max-w-sm text-sm text-neutral-400">
+          <h2 className="mt-6 text-xl font-bold font-mono text-white uppercase tracking-tight">Seu carrinho está vazio</h2>
+          <p className="mt-2 max-w-sm text-xs font-mono text-neutral-400 leading-relaxed">
             Nenhuma ferramenta ou autopeça adicionada ainda. Explore o catálogo do Elcomerc para encontrar o que precisa.
           </p>
           <Link 
             href="/" 
-            className="mt-6 rounded-md bg-orange-500 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-black hover:bg-orange-400 transition-colors font-mono"
+            className="mt-6 rounded-md bg-brand-cyan px-6 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-brand-cyan/80 transition-all duration-200 shadow-lg shadow-brand-cyan/10 hover:scale-[1.02] active:scale-[0.98] font-mono cursor-pointer"
           >
             Voltar para as compras
           </Link>
@@ -131,9 +95,9 @@ export default function CartPage() {
     <>
       <Header />
 
-      <main className="flex-1 bg-neutral-950 px-4 py-8 sm:px-6 lg:px-8 mx-auto w-full max-w-7xl">
+      <main className="flex-1 bg-neutral-950 px-4 py-8 sm:px-6 lg:px-8 mx-auto w-full max-w-7xl animate-in fade-in duration-500">
         <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl font-mono uppercase mb-8">
-          Seu <span className="text-orange-500">Carrinho</span>
+          Seu <span className="text-brand-cyan">Carrinho</span>
         </h1>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -143,7 +107,7 @@ export default function CartPage() {
             {cart.map((item) => (
               <div 
                 key={item.product.id}
-                className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900 p-4 gap-4 transition-all hover:border-neutral-700"
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border border-neutral-800 bg-neutral-900 p-4 gap-4 transition-all duration-200 hover:border-neutral-700"
               >
                 <div className="flex items-center gap-4 w-full sm:w-auto">
                   <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border border-neutral-800 bg-neutral-950">
@@ -154,7 +118,7 @@ export default function CartPage() {
                     />
                   </div>
                   <div>
-                    <span className="text-[9px] font-mono font-bold tracking-wider text-orange-500 uppercase">
+                    <span className="text-[9px] font-mono font-bold tracking-wider text-brand-cyan uppercase">
                       {item.product.categories?.name || "Geral"}
                     </span>
                     <h3 className="text-sm font-bold text-white line-clamp-1">{item.product.name}</h3>
@@ -171,14 +135,14 @@ export default function CartPage() {
                   <div className="flex items-center justify-between rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 w-24">
                     <button 
                       onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                      className="text-neutral-500 hover:text-white transition-colors"
+                      className="text-neutral-500 hover:text-white transition-colors cursor-pointer"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
                     <span className="font-mono text-xs font-bold text-white">{item.quantity}</span>
                     <button 
                       onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                      className="text-neutral-500 hover:text-white transition-colors disabled:opacity-20"
+                      className="text-neutral-500 hover:text-white transition-colors disabled:opacity-20 cursor-pointer"
                       disabled={item.quantity >= item.product.stock}
                     >
                       <Plus className="h-3 w-3" />
@@ -186,7 +150,7 @@ export default function CartPage() {
                   </div>
 
                   <div className="text-right font-mono min-w-[90px]">
-                    <p className="text-xs text-neutral-400">Total item</p>
+                    <p className="text-[10px] text-neutral-500 uppercase">Total item</p>
                     <p className="text-sm font-bold text-white">
                       {(item.product.price * item.quantity).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                     </p>
@@ -194,7 +158,7 @@ export default function CartPage() {
 
                   <button 
                     onClick={() => removeFromCart(item.product.id)}
-                    className="text-neutral-500 hover:text-red-500 transition-colors p-1"
+                    className="text-neutral-500 hover:text-red-500 transition-colors p-1 cursor-pointer"
                     title="Remover produto"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -205,7 +169,7 @@ export default function CartPage() {
 
             <button 
               onClick={clearCart}
-              className="text-left text-xs font-mono text-neutral-500 hover:text-red-400 transition-colors mt-2"
+              className="text-left text-xs font-mono text-neutral-500 hover:text-red-400 transition-colors mt-2 cursor-pointer"
             >
               [ Limpar todo o carrinho ]
             </button>
@@ -218,7 +182,7 @@ export default function CartPage() {
               {/* Seletor Logístico de Localidade */}
               <div>
                 <h2 className="text-xs font-bold font-mono tracking-wider text-neutral-400 uppercase mb-2.5 flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-orange-500" /> Selecione a Região
+                  <MapPin className="h-3.5 w-3.5 text-brand-cyan" /> Selecione a Região
                 </h2>
                 {loadingShipping ? (
                   <div className="h-10 w-full animate-pulse rounded-md bg-neutral-950 border border-neutral-800" />
@@ -226,7 +190,7 @@ export default function CartPage() {
                   <select
                     value={selectedCity}
                     onChange={(e) => setSelectedCity(e.target.value)}
-                    className="w-full rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2.5 font-mono text-xs text-neutral-200 transition-colors focus:border-orange-500 focus:outline-none"
+                    className="w-full rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2.5 font-mono text-xs text-neutral-200 transition-colors focus:border-brand-cyan focus:outline-none cursor-pointer"
                   >
                     <option value="">Selecione sua cidade...</option>
                     {shippingRules.map((rule) => (
@@ -241,7 +205,7 @@ export default function CartPage() {
               {/* Input do Endereço Completo */}
               <div className="flex flex-col gap-1.5 font-mono text-xs text-neutral-300">
                 <label className="text-[10px] text-neutral-500 uppercase font-bold flex items-center gap-1.5">
-                  <Map className="h-3.5 w-3.5 text-orange-500" /> Endereço de Entrega *
+                  <Map className="h-3.5 w-3.5 text-brand-cyan" /> Endereço de Entrega *
                 </label>
                 <input
                   type="text"
@@ -249,7 +213,7 @@ export default function CartPage() {
                   placeholder="Rua, número, bairro..."
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value)}
-                  className="w-full rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2.5 font-mono text-xs text-neutral-200 focus:border-orange-500 focus:outline-none placeholder-neutral-700"
+                  className="w-full rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2.5 font-mono text-xs text-neutral-200 focus:border-brand-cyan focus:outline-none placeholder-neutral-800 transition-colors"
                 />
               </div>
 
@@ -272,7 +236,7 @@ export default function CartPage() {
                   </div>
 
                   <div className="flex justify-between text-neutral-400">
-                    <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-orange-500/70" /> Frete calculado</span>
+                    <span className="flex items-center gap-1"><Truck className="h-3.5 w-3.5 text-brand-cyan/70" /> Frete calculado</span>
                     <span className={activeRule ? "text-green-400 font-bold" : "text-neutral-500 italic"}>
                       {activeRule 
                         ? estimatedShipping.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) 
@@ -284,7 +248,7 @@ export default function CartPage() {
                 {/* Total Geral */}
                 <div className="flex items-baseline justify-between font-mono pt-4 mb-6">
                   <span className="text-sm font-bold text-white uppercase">Total</span>
-                  <span className="text-xl font-black text-orange-500">
+                  <span className="text-xl font-black text-brand-cyan transition-colors">
                     {orderTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                   </span>
                 </div>
@@ -292,8 +256,34 @@ export default function CartPage() {
                 {/* Botão de Checkout Final Conectado ao Backend */}
                 <button 
                   disabled={!selectedCity || !deliveryAddress.trim() || isSubmitting}
-                  onClick={handleCheckout}
-                  className="w-full flex items-center justify-center gap-2 rounded-md bg-orange-500 py-3 text-sm font-black text-black hover:bg-orange-400 transition-colors uppercase font-mono disabled:opacity-40"
+                  onClick={async () => {
+                    if (!selectedCity || !deliveryAddress.trim()) {
+                      alert("Por favor, selecione a cidade e insira o endereço de entrega completo.");
+                      return;
+                    }
+                    try {
+                      setIsSubmitting(true);
+                      const response = await fetch("/api/checkout", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          cartItems: cart,
+                          deliveryCity: selectedCity,
+                          deliveryAddress: deliveryAddress.trim(),
+                        }),
+                      });
+                      const data = await response.json();
+                      if (!response.ok) throw new Error(data.error || "Falha ao processar o fechamento do pedido.");
+                      alert(`Pedido registrado com sucesso na Elcomerc!\nID do Pedido: ${data.orderId}`);
+                      clearCart();
+                      window.location.href = "/";
+                    } catch (err: any) {
+                      alert(err.message || "Ocorreu um erro ao fechar o pedido. Verifique se você realizou o login.");
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-2 rounded-md bg-brand-cyan py-3 text-sm font-black text-black hover:bg-brand-cyan/80 transition-all duration-300 uppercase font-mono disabled:opacity-30 cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
                 >
                   {isSubmitting ? "Processando Venda..." : "Fechar Pedido"} <ArrowRight className="h-4 w-4" />
                 </button>
