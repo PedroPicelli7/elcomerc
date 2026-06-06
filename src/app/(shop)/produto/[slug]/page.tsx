@@ -23,24 +23,22 @@ export default function ProductDetail() {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
 
-  // Busca o produto correspondente ao slug da URL nos nossos mocks
   const product = MOCK_PRODUCTS.find((p) => p.slug === params.slug);
 
-  // Fallback caso o produto não seja encontrado
   if (!product) {
     return (
       <>
         <Header />
-        <div className="flex flex-1 flex-col items-center justify-center bg-neutral-950 px-4 text-center">
-          <h2 className="text-xl font-bold text-white">
+        <div className="flex flex-1 min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-neutral-950 px-4 text-center font-mono">
+          <h2 className="text-xl font-black text-white uppercase tracking-tight">
             Produto não encontrado
           </h2>
-          <p className="mt-2 text-sm text-neutral-400">
-            O item que você busca não existe ou foi removido.
+          <p className="mt-2 text-xs text-neutral-400">
+            O item que você busca não existe ou foi removido do estoque.
           </p>
           <Link
             href="/"
-            className="mt-4 rounded-md bg-orange-500 px-4 py-2 text-xs font-bold text-black hover:bg-orange-400 font-mono"
+            className="mt-6 rounded border border-brand-cyan/20 bg-brand-cyan/10 px-5 py-2.5 text-xs font-black text-brand-cyan hover:bg-brand-cyan/20 transition-all uppercase"
           >
             Voltar para a Home
           </Link>
@@ -57,66 +55,58 @@ export default function ProductDetail() {
     }
   };
 
-  const handleAddAndRedirect = () => {
-    addToCart(product, quantity);
-    // Redireciona opcionalmente ou avisa o usuário (vamos manter na página para melhor UX de multi-compra)
-  };
-
   return (
     <>
       <Header />
 
-      <main className="flex-1 bg-neutral-950 px-4 py-6 sm:px-6 lg:px-8 mx-auto w-full max-w-7xl">
+      <main className="flex-1 bg-neutral-950 px-4 py-8 sm:px-6 lg:px-8 mx-auto w-full max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
         {/* Botão Voltar */}
         <button
           onClick={() => router.back()}
-          className="mb-6 flex items-center gap-1 text-xs font-mono text-neutral-400 hover:text-white transition-colors"
+          className="mb-6 flex items-center gap-1 text-xs font-mono text-neutral-500 hover:text-brand-cyan transition-colors cursor-pointer"
         >
           <ChevronLeft className="h-4 w-4" /> VOLTAR
         </button>
 
         {/* Layout de Duas Colunas */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {/* Coluna Esquerda: Imagem */}
-          <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900 p-2 flex items-center justify-center aspect-square max-h-[500px]">
+          {/* Imagem do Produto */}
+          <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/40 p-2 flex items-center justify-center aspect-square max-h-[500px]">
             <img
               src={product.image_url}
               alt={product.name}
-              className="h-full w-full rounded-lg object-cover object-center"
+              className="h-full w-full rounded-lg object-cover object-center transition-transform duration-500 hover:scale-102"
             />
           </div>
 
-          {/* Coluna Direita: Informações de Compra */}
-          <div className="flex flex-col justify-between">
+          {/* Informações de Compra */}
+          <div className="flex flex-col justify-between space-y-6 lg:space-y-0">
             <div>
-              <span className="text-xs font-bold tracking-widest text-orange-500 uppercase font-mono">
-                {/* CORREÇÃO: Lê o nome da categoria vinda do JOIN relacional de forma segura */}
-                {product.categories?.name ||
-                  (product as any).category ||
-                  "Geral"}
+              <span className="text-[10px] font-bold tracking-widest text-brand-cyan uppercase font-mono bg-brand-cyan/10 border border-brand-cyan/20 px-2.5 py-0.5 rounded">
+                {product.categories?.name || (product as any).category || "Geral"}
               </span>
-              <h1 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
+              <h1 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-3xl font-mono uppercase">
                 {product.name}
               </h1>
 
-              <p className="mt-4 text-base font-black text-orange-500 text-2xl font-mono">
+              <p className="mt-4 font-black text-brand-cyan text-2xl font-mono tracking-tight">
                 {product.price.toLocaleString("pt-BR", {
                   style: "currency",
                   currency: "BRL",
                 })}
               </p>
 
-              <div className="mt-6 border-t border-b border-neutral-800 py-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 font-mono">
-                  Descrição
+              <div className="mt-6 border-t border-b border-neutral-800/80 py-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 font-mono">
+                  Descrição Técnica
                 </h3>
-                <p className="mt-2 text-sm text-neutral-300 leading-relaxed">
+                <p className="mt-2 text-xs font-mono text-neutral-300 leading-relaxed">
                   {product.description}
                 </p>
               </div>
 
-              {/* Especificações Técnicas Rápidas (Crucial pro Nicho Automotivo) */}
-              <div className="mt-6 grid grid-cols-2 gap-4 bg-neutral-900/50 p-4 rounded-lg border border-neutral-800/60">
+              {/* Especificações Técnicas Rápidas */}
+              <div className="mt-6 grid grid-cols-2 gap-4 bg-neutral-900/40 p-4 rounded-lg border border-neutral-800/60">
                 <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono">
                   <Package className="h-4 w-4 text-neutral-500" />
                   <span>
@@ -139,13 +129,13 @@ export default function ProductDetail() {
             </div>
 
             {/* Ações de Compra Finais */}
-            <div className="mt-8 border-t border-neutral-800 pt-6">
+            <div className="mt-8 border-t border-neutral-800/60 pt-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 {/* Seletor de Quantidade */}
                 <div className="flex items-center justify-between rounded-md border border-neutral-800 bg-neutral-900 px-3 py-2 sm:w-32">
                   <button
                     onClick={() => handleQuantityChange("decrease")}
-                    className="text-neutral-400 hover:text-white transition-colors disabled:opacity-30"
+                    className="text-neutral-500 hover:text-white transition-colors disabled:opacity-20 cursor-pointer"
                     disabled={quantity <= 1}
                   >
                     <Minus className="h-4 w-4" />
@@ -155,7 +145,7 @@ export default function ProductDetail() {
                   </span>
                   <button
                     onClick={() => handleQuantityChange("increase")}
-                    className="text-neutral-400 hover:text-white transition-colors disabled:opacity-30"
+                    className="text-neutral-500 hover:text-white transition-colors disabled:opacity-20 cursor-pointer"
                     disabled={quantity >= product.stock}
                   >
                     <Plus className="h-4 w-4" />
@@ -164,8 +154,9 @@ export default function ProductDetail() {
 
                 {/* Botão Adicionar ao Carrinho */}
                 <button
-                  onClick={handleAddAndRedirect}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-md bg-orange-500 py-3 text-sm font-black text-black hover:bg-orange-400 transition-colors uppercase font-mono"
+                  onClick={() => addToCart(product, quantity)}
+                  disabled={product.stock <= 0}
+                  className="flex flex-1 items-center justify-center gap-2 rounded bg-brand-cyan py-3 text-sm font-black text-black hover:bg-brand-cyan/80 transition-all duration-300 uppercase font-mono tracking-tight shadow-lg shadow-brand-cyan/10 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-30 cursor-pointer"
                 >
                   <ShoppingCart className="h-4 w-4" /> Adicionar ao Carrinho
                 </button>
@@ -173,10 +164,9 @@ export default function ProductDetail() {
 
               {/* Info de Entrega Rápida */}
               <div className="mt-4 flex items-center gap-2 text-[11px] text-neutral-500 font-mono">
-                <Truck className="h-3.5 w-3.5 text-orange-500/70" />
+                <Truck className="h-3.5 w-3.5 text-brand-cyan/60" />
                 <span>
-                  Envio imediato via transportadora com cálculo de peso
-                  dinâmico.
+                  Envio imediato via transportadora com cálculo de peso dinâmico regional.
                 </span>
               </div>
             </div>
