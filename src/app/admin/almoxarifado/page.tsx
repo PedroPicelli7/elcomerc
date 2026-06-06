@@ -110,7 +110,7 @@ export default function AlmoxarifadoPage() {
           description: newProdDescription || "Sem descrição disponível.",
           price: Number(newProdPrice),
           stock: Number(newProdStock),
-          weight: Number(newProdWeight) || 500, // peso padrão se vazio
+          weight: Number(newProdWeight) || 500,
           image_url: newProdImageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500",
           category_id: newProdCategoryId
         });
@@ -119,7 +119,6 @@ export default function AlmoxarifadoPage() {
 
       setStatusMessage({ type: "success", text: "Novo produto cadastrado com sucesso!" });
       
-      // Limpa os campos do formulário
       setNewProdName("");
       setNewProdPrice("");
       setNewProdStock("");
@@ -128,7 +127,6 @@ export default function AlmoxarifadoPage() {
       setNewProdDescription("");
       setNewProdImageUrl("");
 
-      // Atualiza a listagem
       loadData();
     } catch (err: any) {
       console.error(err);
@@ -208,14 +206,13 @@ export default function AlmoxarifadoPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-neutral-950 px-4 py-8 sm:px-6 lg:px-8 mx-auto w-full max-w-5xl space-y-8">
+      <main className="min-h-screen bg-neutral-950 px-4 py-8 sm:px-6 lg:px-8 mx-auto w-full max-w-5xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         
         <div className="flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-1 font-mono text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+          <Link href="/admin" className="flex items-center gap-1 font-mono text-xs text-neutral-500 hover:text-brand-cyan transition-colors">
             <ArrowLeft className="h-3.5 w-3.5" /> [ Voltar para o Painel Principal ]
           </Link>
 
-          {/* Banner de Status Feedback Dinâmico */}
           {statusMessage && (
             <div className={`font-mono text-[11px] px-3 py-1 rounded border ${
               statusMessage.type === "success" 
@@ -227,10 +224,10 @@ export default function AlmoxarifadoPage() {
           )}
         </div>
 
-        {/* FORMULÁRIO DE NOVO PRODUTO */}
+        {/* FORMULÁRIO DE NOVO PRODUTO SINTONIZADO NO CIANO */}
         <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6 space-y-4">
           <div className="border-b border-neutral-800 pb-3 flex items-center gap-2">
-            <PlusCircle className="h-5 w-5 text-orange-500" />
+            <PlusCircle className="h-5 w-5 text-brand-cyan" />
             <h2 className="text-sm font-bold text-white font-mono uppercase tracking-tight">
               Cadastrar Novo Produto no Catálogo
             </h2>
@@ -245,7 +242,7 @@ export default function AlmoxarifadoPage() {
                 placeholder="Ex: Jogo de Chaves Fixas Combinadas"
                 value={newProdName}
                 onChange={(e) => setNewProdName(e.target.value)}
-                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-orange-500 focus:outline-none"
+                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-brand-cyan focus:outline-none transition-colors"
               />
             </div>
 
@@ -255,7 +252,7 @@ export default function AlmoxarifadoPage() {
                 required
                 value={newProdCategoryId}
                 onChange={(e) => setNewProdCategoryId(e.target.value)}
-                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-orange-500 focus:outline-none"
+                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-brand-cyan focus:outline-none cursor-pointer"
               >
                 <option value="">Selecione...</option>
                 {categories.map(cat => (
@@ -273,7 +270,7 @@ export default function AlmoxarifadoPage() {
                 placeholder="0.00"
                 value={newProdPrice}
                 onChange={(e) => setNewProdPrice(e.target.value)}
-                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-orange-500 focus:outline-none"
+                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-brand-cyan focus:outline-none transition-colors"
               />
             </div>
 
@@ -285,7 +282,7 @@ export default function AlmoxarifadoPage() {
                 placeholder="0"
                 value={newProdStock}
                 onChange={(e) => setNewProdStock(e.target.value)}
-                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-orange-500 focus:outline-none"
+                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-brand-cyan focus:outline-none transition-colors"
               />
             </div>
 
@@ -296,7 +293,7 @@ export default function AlmoxarifadoPage() {
                 placeholder="500"
                 value={newProdWeight}
                 onChange={(e) => setNewProdWeight(e.target.value)}
-                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-orange-500 focus:outline-none"
+                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-brand-cyan focus:outline-none transition-colors"
               />
             </div>
 
@@ -307,7 +304,7 @@ export default function AlmoxarifadoPage() {
                 placeholder="https://linkdafoto.com/imagem.jpg"
                 value={newProdImageUrl}
                 onChange={(e) => setNewProdImageUrl(e.target.value)}
-                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-orange-500 focus:outline-none"
+                className="w-full rounded border border-neutral-800 bg-neutral-950 px-3 py-2 text-white focus:border-brand-cyan focus:outline-none transition-colors"
               />
             </div>
 
@@ -317,7 +314,7 @@ export default function AlmoxarifadoPage() {
                 placeholder="Detalhes sobre a durabilidade, compatibilidade ou marca..."
                 value={newProdDescription}
                 onChange={(e) => setNewProdDescription(e.target.value)}
-                className="w-full h-16 rounded border border-neutral-800 bg-neutral-950 p-3 text-white focus:border-orange-500 focus:outline-none"
+                className="w-full h-16 rounded border border-neutral-800 bg-neutral-950 p-3 text-white focus:border-brand-cyan focus:outline-none transition-colors"
               />
             </div>
 
@@ -325,7 +322,7 @@ export default function AlmoxarifadoPage() {
               <button
                 type="submit"
                 disabled={isCreating}
-                className="w-full rounded bg-orange-500 py-2.5 font-mono text-xs font-black text-black hover:bg-orange-400 transition-colors uppercase disabled:opacity-50"
+                className="w-full rounded bg-brand-cyan py-2.5 font-mono text-xs font-black text-black hover:bg-brand-cyan/80 transition-all duration-200 uppercase tracking-tight shadow-lg shadow-brand-cyan/10 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-30 cursor-pointer"
               >
                 {isCreating ? "Salvando item no catálogo..." : "Adicionar Produto ao Catálogo"}
               </button>
@@ -345,7 +342,7 @@ export default function AlmoxarifadoPage() {
               onClick={loadData}
               className="p-2 rounded border border-neutral-800 bg-neutral-950 text-neutral-400 hover:text-white transition-colors"
             >
-              <RefreshCw className={`h-4 w-4 ${loadingProducts ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 text-brand-cyan ${loadingProducts ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
@@ -374,7 +371,7 @@ export default function AlmoxarifadoPage() {
                           step="0.01"
                           value={product.price}
                           onChange={(e) => handleLocalRowChange(product.id, "price", Number(e.target.value))}
-                          className="w-full rounded border border-neutral-800 bg-neutral-950 px-2 py-1 text-white focus:border-orange-500 focus:outline-none"
+                          className="w-full rounded border border-neutral-800 bg-neutral-950 px-2 py-1 text-white focus:border-brand-cyan focus:outline-none transition-colors"
                         />
                       </td>
                       <td className="py-3 px-2">
@@ -382,14 +379,14 @@ export default function AlmoxarifadoPage() {
                           type="number"
                           value={product.stock}
                           onChange={(e) => handleLocalRowChange(product.id, "stock", Number(e.target.value))}
-                          className="w-full rounded border border-neutral-800 bg-neutral-950 px-2 py-1 text-white focus:border-orange-500 focus:outline-none"
+                          className="w-full rounded border border-neutral-800 bg-neutral-950 px-2 py-1 text-white focus:border-brand-cyan focus:outline-none transition-colors"
                         />
                       </td>
                       <td className="py-3 px-2 text-center">
                         <button
                           onClick={() => handleUpdateIndividual(product.id, product.price, product.stock)}
                           disabled={updatingId === product.id}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded bg-orange-500 text-black hover:bg-orange-400 transition-colors disabled:opacity-30"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded bg-brand-cyan text-black hover:bg-brand-cyan/80 transition-all cursor-pointer disabled:opacity-30 active:scale-90"
                         >
                           <Save className="h-3.5 w-3.5" />
                         </button>
@@ -415,13 +412,13 @@ export default function AlmoxarifadoPage() {
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
                 placeholder="Insira o bloco JSON de produtos aqui..."
-                className="h-28 w-full rounded-lg border border-neutral-800 bg-neutral-950 p-3 font-mono text-xs text-neutral-300 focus:border-orange-500 focus:outline-none"
+                className="h-28 w-full rounded-lg border border-neutral-800 bg-neutral-950 p-3 font-mono text-xs text-neutral-300 focus:border-brand-cyan focus:outline-none transition-colors"
               />
               <div className="flex gap-3">
                 <button
                   onClick={handleMassImport}
                   disabled={isSavingMass}
-                  className="flex-1 rounded bg-neutral-800 border border-neutral-700 hover:border-neutral-600 py-2 text-xs font-bold text-white uppercase font-mono disabled:opacity-50"
+                  className="flex-1 rounded bg-neutral-800 border border-neutral-700 hover:border-brand-cyan/40 py-2.5 text-xs font-bold text-white uppercase font-mono disabled:opacity-50 cursor-pointer transition-all hover:bg-neutral-900"
                 >
                   {isSavingMass ? "Importando dados..." : "Importar em Bloco"}
                 </button>
