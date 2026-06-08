@@ -8,7 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Package, User, MapPin, MessageSquare } from "lucide-react";
 
 // Insira aqui o número de WhatsApp do seu pai (Apenas números, com DDD e código do país)
-const WHATSAPP_NUMBER = "5519999999999"; 
+const WHATSAPP_NUMBER = "5519989767179"; 
 
 export default function CartPage() {
   const { 
