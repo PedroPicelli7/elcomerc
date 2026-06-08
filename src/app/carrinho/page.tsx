@@ -48,7 +48,7 @@ export default function CartPage() {
       // 1. Cabeçalho da mensagem estruturada
       let message = `*NOVA RESERVA - ELCOMERC*\n\n`;
       message += `*Cliente:* ${customerName.trim()}\n`;
-      message += `*Forma de Retirada:* ${deliveryOption === "entrega" ? "Entrega a Combinar" : "Retirar na Oficina"}\n`;
+      message += `*Forma de Retirada:* ${deliveryOption === "entrega" ? "Entrega a Combinar" : "Retirada"}\n`;
       
       if (deliveryOption === "entrega") {
         message += `*Endereço:* ${deliveryAddress.trim()}\n`;

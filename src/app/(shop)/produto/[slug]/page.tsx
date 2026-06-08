@@ -1,15 +1,16 @@
 // src/app/(shop)/produto/[slug]/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Header } from "@/components/common/Header";
-import { MOCK_PRODUCTS } from "@/utils/products.mock";
+import { supabaseClient } from "@/services/supabase/client"; // Cliente oficial do banco
 import { useCart } from "@/context/CartContext";
+import { Product } from "@/types/shop.types"; // Tipo global exigido pelo seu CartContext
 import {
   ChevronLeft,
   ShieldCheck,
-  Truck,
+  MessageSquare,
   Package,
   Plus,
   Minus,
@@ -21,20 +22,83 @@ export default function ProductDetail() {
   const params = useParams();
   const router = useRouter();
   const { addToCart } = useCart();
+  
+  // Estados para gerenciar o produto dinâmico vindo do Supabase
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 
-  const product = MOCK_PRODUCTS.find((p) => p.slug === params.slug);
+  // Busca o produto de forma assíncrona usando o Slug da URL
+  useEffect(() => {
+    async function loadProductDetail() {
+      if (!params?.slug) return;
+      
+      try {
+        setLoading(true);
+        const { data, error } = await supabaseClient
+          .from("products")
+          .select(`id, name, slug, price, stock, description, image_url, weight, category_id, categories ( id, name, slug )`)
+          .eq("slug", params.slug)
+          .single();
 
+        if (error) throw error;
+
+        if (data) {
+          // Trata o retorno do Supabase para encaixar perfeitamente no tipo 'Product'
+          const rawCategory = data.categories;
+          const formattedCategory = Array.isArray(rawCategory) 
+            ? rawCategory[0] 
+            : rawCategory;
+
+          setProduct({
+            ...data,
+            price: Number(data.price),
+            stock: Number(data.stock),
+            categories: formattedCategory || null
+          } as Product);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar detalhes do produto no Supabase:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProductDetail();
+  }, [params?.slug]);
+
+  const handleQuantityChange = (type: "increase" | "decrease") => {
+    if (!product) return;
+    if (type === "increase" && quantity < product.stock) {
+      setQuantity((prev) => prev + 1);
+    } else if (type === "decrease" && quantity > 1) {
+      setQuantity((prev) => prev - 1);
+    }
+  };
+
+  // 1. Estado de Carregamento Assíncrono (Skeleton / Loading)
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="flex flex-1 min-h-[calc(100vh-4rem)] items-center justify-center bg-neutral-950 font-mono text-xs text-neutral-500 animate-pulse">
+          [ CARREGANDO DETALHES TÉCNICOS... ]
+        </div>
+      </>
+    );
+  }
+
+  // 2. Estado de Fallback se o produto realmente não existir no Supabase
   if (!product) {
     return (
       <>
         <Header />
-        <div className="flex flex-1 min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-neutral-950 px-4 text-center font-mono">
+        <div className="flex flex-1 min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-neutral-950 px-4 text-center font-mono animate-in fade-in duration-300">
           <h2 className="text-xl font-black text-white uppercase tracking-tight">
             Produto não encontrado
           </h2>
           <p className="mt-2 text-xs text-neutral-400">
-            O item que você busca não existe ou foi removido do estoque.
+            O item que você busca não existe ou foi removido do estoque da oficina.
           </p>
           <Link
             href="/"
@@ -46,14 +110,6 @@ export default function ProductDetail() {
       </>
     );
   }
-
-  const handleQuantityChange = (type: "increase" | "decrease") => {
-    if (type === "increase" && quantity < product.stock) {
-      setQuantity((prev) => prev + 1);
-    } else if (type === "decrease" && quantity > 1) {
-      setQuantity((prev) => prev - 1);
-    }
-  };
 
   return (
     <>
@@ -158,15 +214,15 @@ export default function ProductDetail() {
                   disabled={product.stock <= 0}
                   className="flex flex-1 items-center justify-center gap-2 rounded bg-brand-cyan py-3 text-sm font-black text-black hover:bg-brand-cyan/80 transition-all duration-300 uppercase font-mono tracking-tight shadow-lg shadow-brand-cyan/10 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-30 cursor-pointer"
                 >
-                  <ShoppingCart className="h-4 w-4" /> Adicionar ao Carrinho
+                  <ShoppingCart className="h-4 w-4" /> Adicionar à Reserva
                 </button>
               </div>
 
-              {/* Info de Entrega Rápida */}
+              {/* Info de Retirada Consultiva da Oficina */}
               <div className="mt-4 flex items-center gap-2 text-[11px] text-neutral-500 font-mono">
-                <Truck className="h-3.5 w-3.5 text-brand-cyan/60" />
+                <MessageSquare className="h-3.5 w-3.5 text-brand-cyan/60" />
                 <span>
-                  Envio imediato via transportadora com cálculo de peso dinâmico regional.
+                  Disponibilidade garantida para reserva imediata e retirada agendada via WhatsApp.
                 </span>
               </div>
             </div>
